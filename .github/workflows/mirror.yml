@@ -1,0 +1,52 @@
+name: Update mirrors
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  update-mirror:
+    name: Update mirror
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        source:
+          - https://chromium.googlesource.com/chromium/src/build
+          - https://chromium.googlesource.com/chromium/src/buildtools
+          - https://chromium.googlesource.com/chromium/src/testing
+          - https://chromium.googlesource.com/chromium/src/third_party/jsoncpp
+          - https://chromium.googlesource.com/chromium/src/third_party/zlib
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: Get repo name
+        id: info
+        run: |
+          repo=$(printf '%s\n' '${{ matrix.source }}' | cut -d/ -f4- | tr / -)
+          printf 'repo=%s\n' "$repo" >> $GITHUB_OUTPUT
+      - name: Get SSH key
+        id: key
+        run: |
+          printf 'name=%s_SSH_KEY\n' "$(
+            printf '%s\n' '${{ steps.info.outputs.repo }}' |
+            tr '[:lower:]-' '[:upper:]_'
+          )" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v5
+        with:
+          repository: gsource-mirror/${{ steps.info.outputs.repo }}
+          path: ${{ steps.info.outputs.repo }}
+          ssh-key: ${{ secrets[steps.key.outputs.name] }}
+      - name: Update ${{ steps.info.outputs.repo }} repo
+        run: |
+          cd '${{ steps.info.outputs.repo }}'/.git
+          git config core.bare true
+          push_url=$(git remote get-url origin)
+          git remote remove origin
+          git remote add origin --mirror=fetch '${{ matrix.source }}'
+          git fetch -p origin
+          git push --mirror "$push_url"
