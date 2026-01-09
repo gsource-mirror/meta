@@ -18,6 +18,7 @@ jobs:
           - https://chromium.googlesource.com/chromium/src/buildtools
           - https://chromium.googlesource.com/chromium/src/testing
           - https://chromium.googlesource.com/chromium/src/third_party/jsoncpp
+          - https://chromium.googlesource.com/chromium/src/third_party/rust
           - https://chromium.googlesource.com/chromium/src/third_party/zlib
 
     steps:
