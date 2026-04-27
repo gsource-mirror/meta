@@ -20,6 +20,7 @@ jobs:
           - https://chromium.googlesource.com/chromium/src/third_party/jsoncpp
           - https://chromium.googlesource.com/chromium/src/third_party/rust
           - https://chromium.googlesource.com/chromium/src/third_party/zlib
+          - https://gn.googlesource.com/gn
 
     steps:
       - uses: actions/checkout@v5
